@@ -1,0 +1,62 @@
+﻿-- =============================================
+-- Database: SOMS_DB
+-- Sales Order Management System
+-- Schema & Initial Seed Data
+-- =============================================
+
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'SOMS_DB')
+BEGIN
+    CREATE DATABASE SOMS_DB;
+END
+GO
+
+USE SOMS_DB;
+GO
+
+-- 1. Drop existing tables if needed (reverse dependency order)
+IF OBJECT_ID('dbo.SALES_SO_LITEM', 'U') IS NOT NULL DROP TABLE dbo.SALES_SO_LITEM;
+IF OBJECT_ID('dbo.SALES_SO', 'U') IS NOT NULL DROP TABLE dbo.SALES_SO;
+IF OBJECT_ID('dbo.COM_CUSTOMER', 'U') IS NOT NULL DROP TABLE dbo.COM_CUSTOMER;
+GO
+
+-- 2. Tabel Master Pelanggan
+CREATE TABLE COM_CUSTOMER (
+    COM_CUSTOMER_ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    CUSTOMER_NAME   VARCHAR(100) NOT NULL
+);
+GO
+
+-- 3. Tabel Sales Order Header
+CREATE TABLE SALES_SO (
+    SALES_SO_ID     INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    SO_NO           VARCHAR(20) NOT NULL,
+    ORDER_DATE      DATETIME NOT NULL,
+    COM_CUSTOMER_ID INT NOT NULL,
+    ADDRESS         VARCHAR(500) NULL,
+    CONSTRAINT FK_SO_CUSTOMER FOREIGN KEY (COM_CUSTOMER_ID)
+        REFERENCES COM_CUSTOMER(COM_CUSTOMER_ID)
+);
+GO
+
+-- 4. Tabel Sales Order Detail Item
+CREATE TABLE SALES_SO_LITEM (
+    SALES_SO_LITEM_ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    SALES_SO_ID       INT NOT NULL,
+    ITEM_NAME         VARCHAR(100) NOT NULL,
+    QUANTITY          INT NOT NULL,
+    PRICE             FLOAT NOT NULL,
+    CONSTRAINT FK_LITEM_SO FOREIGN KEY (SALES_SO_ID)
+        REFERENCES SALES_SO(SALES_SO_ID)
+);
+GO
+
+-- 5. Seed Data Master Pelanggan (Wajib minimal 3 record)
+SET IDENTITY_INSERT COM_CUSTOMER OFF;
+INSERT INTO COM_CUSTOMER (CUSTOMER_NAME) VALUES ('PT Maju Bersama');
+INSERT INTO COM_CUSTOMER (CUSTOMER_NAME) VALUES ('CV Sejahtera Abadi');
+INSERT INTO COM_CUSTOMER (CUSTOMER_NAME) VALUES ('PT Karya Utama');
+GO
+
+-- Verifikasi data
+SELECT * FROM COM_CUSTOMER;
+GO
